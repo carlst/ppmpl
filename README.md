@@ -61,6 +61,8 @@ See obj['resultTitle'], obj['resultInfo'], obj['resultExtra']
 
 See assets/www/index.html for example code.
 
+Button images may be found at https://www.paypal.com/newlogobuttons  
+
 
 ## Testing ##
 
