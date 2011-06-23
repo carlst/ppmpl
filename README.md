@@ -10,7 +10,7 @@ without adding any payment code (to send credentials securely) to a back-end web
 ## Installation ##
 
 To install:  
-- Copy src/com/ppmpl/mpl.java and src/com/ppmpl/ResultDelegate.java to your project src/com/ directory
+- Copy src/com/ppmpl/mpl.java and src/com/ppmpl/ResultDelegate.java to your project src/com/ directory  
 - Change the package names at the top of the files just copied to the package name of your project  
 - Download and install the PayPal Mobile Payment Library (MPL) - Android Library
 from https://www.x.com/community/ppx/sdks  
