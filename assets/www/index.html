@@ -1,0 +1,324 @@
+<html>
+<head>
+<title>Demo JavaScript MPL</title>
+<!-- Changed by: , 22-Jun-2011 -->
+
+<script type='text/javascript'>
+  var ppmpl_recipient = 'seller_12345@example.com';
+  var ppmpl_merchant_name = "Bob's Test Store";
+
+  function runDemo() {
+    setClosed('pmt_container');
+    setClosed('pmt_show_initialize');
+    setClosed('pmt_show_loading');
+    setClosed('pmt_show_details');
+    setClosed('pmt_show_details_form');
+    setClosed('pmt_show_buttons');
+    setClosed('pmt_show_results');
+    setClosed('pmt_results');
+
+    initPaymentDetailsForm();
+
+    setOpen('pmt_container');
+    setOpen('pmt_show_initialize');
+
+    return false;
+  };
+
+  // Initialize JavaScript MPL library
+  function initialize() {
+    // Show loading image while waiting for initialization
+    setOpen('pmt_show_loading');
+
+    // Initialize JavaScript MPL library
+    mpl.prepare(0);
+
+    getStatus();
+  };
+
+  // Check initialization
+  function getStatus() {
+    var str = mpl.getStatus() + "";
+    if (parseInt(str) == 1) {
+      setClosed('pmt_show_loading');
+      setClosed('pmt_show_initialize');
+      setOpen('pmt_show_details');
+    } else {
+      setTimeout(getStatus, 500);
+    } 
+    return 0;
+  };
+
+  // Submit payment details
+  function submitPaymentDetails(obj) {
+    var str;
+    str = JSON.stringify(obj);
+
+    // Call (with JSON arg)
+    obj.paymentAmount = obj.subtotal;
+    obj.paymentCurrency = obj.currency;
+    obj.recipient = obj.recipient;
+    obj.itemDesc = obj.description;
+    obj.merchantName = obj.merchant_name;
+    obj.customID = '123';
+    obj.ipnUrl = 'http://127.0.0.1';
+    obj.tax = obj.tax;
+    obj.shipping = obj.shipping;
+    str = JSON.stringify(obj);
+    mpl.setPaymentInfo(str);
+
+    return false;
+  };
+
+  // Make payment
+  function clickButtonMPL(btype) {
+      mpl.pay(0);
+      setTimeout(showPaymentResults, 5000);
+  }
+
+  // Get payment results
+  function getPaymentResultsMPL() {
+    var obj, str;
+
+    // Get result (in JSON)
+    str = mpl.getPaymentResults();
+    if (str) {
+      obj = JSON.parse(str);
+    } else {
+      obj = str;
+    }
+
+    return obj;
+  };
+
+  // Utilities
+  //
+  // Manage payment form
+  function getPaymentDetailsDefault() {
+    var obj = {
+      subtotal: '39.99',
+      currency: 'USD',
+      recipient: ppmpl_recipient,
+      payment_type: 'goods',
+      merchant_name: ppmpl_merchant_name,
+      description: 'Introduction to JavaScript MPL',
+      custom_id: '123',
+      ipn_url: 'http://127.0.0.1',
+      memo: 'JS MPL book',
+      tax: '',
+      shipping: ''
+    };
+    return obj;
+  };
+
+  function initPaymentDetailsForm() {
+    var obj = getPaymentDetailsDefault();
+    elt = document.getElementById('pmt_subtotal');
+    if (elt)
+      elt.value = obj.subtotal;
+    elt = document.getElementById('pmt_currency');
+    if (elt)
+      elt.value = obj.currency;
+    elt = document.getElementById('pmt_recipient');
+    if (elt)
+      elt.value = obj.recipient;
+    elt = document.getElementById('pmt_type');
+    if (elt)
+      elt.value = obj.payment_type;
+    elt = document.getElementById('pmt_merchant');
+    if (elt)
+      elt.value = obj.merchant_name;
+    elt = document.getElementById('pmt_description');
+    if (elt)
+      elt.value = obj.description;
+    elt = document.getElementById('pmt_memo');
+    if (elt)
+      elt.value = obj.memo;
+    elt = document.getElementById('pmt_tax');
+    if (elt)
+      elt.value = obj.tax;
+    elt = document.getElementById('pmt_shipping');
+    if (elt)
+      elt.value = obj.shipping;
+
+    return obj;
+  };
+
+  function showPaymentDetailsForm() {
+    if (isOpen('pmt_show_details_form'))
+      closePaymentDetailsForm();
+    else {
+      setOpen('pmt_show_details_form');
+      document.getElementById('pmt_recipient').value = ppmpl_recipient;
+      document.getElementById('pmt_merchant').value = ppmpl_merchant_name;
+    }
+  };
+
+  function closePaymentDetailsForm() {
+    var obj = initPaymentDetailsForm();
+
+    submitPaymentDetails(obj);
+    setClosed('pmt_show_details');
+    setClosed('pmt_show_details_form');
+    setOpen('pmt_show_buttons');
+    return false;
+  };
+
+  function setPaymentDetailsForm() {
+    var obj = {};
+
+    obj.subtotal = document.getElementById('pmt_subtotal').value;
+    obj.currency = document.getElementById('pmt_currency').value;
+    obj.recipient = document.getElementById('pmt_recipient').value;
+    obj.payment_type = document.getElementById('pmt_type').value;
+    obj.merchant_name = document.getElementById('pmt_merchant').value;
+    obj.description = document.getElementById('pmt_description').value;
+    obj.memo = document.getElementById('pmt_memo').value;
+    obj.tax = document.getElementById('pmt_tax').value;
+    obj.shipping = document.getElementById('pmt_shipping').value;
+
+    closePaymentDetailsForm();
+
+    submitPaymentDetails(obj);
+
+    return false;
+  };
+
+  // Manage payment results
+  function showPaymentResults() {
+    setOpen('pmt_show_results');
+  };
+
+  function showPaymentResultsMPL() {
+    var ostr = '';
+    var obj = getPaymentResultsMPL();
+
+    ostr += obj['resultInfo'];
+    ostr += '<br>';
+    ostr += obj['resultTitle'];
+    ostr += '<br>';
+    ostr += obj['resultExtra'];
+    ostr += '<br>';
+    document.getElementById('pmt_results').innerHTML = ostr;
+
+    setOpen('pmt_results');
+    return false;
+  };
+
+
+
+  function isOpen(id) {
+    var elt;
+    elt = document.getElementById(id);
+    return elt ? (elt.style.display == '' ? 1 : 0) : 0;
+  };
+  function setOpen(id) {
+    var elt;
+    elt = document.getElementById(id);
+    if (elt) elt.style.display = '';
+  };
+  function setClosed(id) {
+    var elt;
+    elt = document.getElementById(id);
+    if (elt) elt.style.display = 'none';
+  };
+</script>
+</head>
+<body onload='runDemo();'>
+
+  <table align='center'>
+    <tr>
+      <td>
+	<b>PayPal Mobile Payments</b>
+      </td>
+    </tr>
+    <tr>
+      <td>
+	<b>with JavaScript Native Apps</b></span>    </td>
+    </tr>
+  </table>
+
+  <div id='pmt_container' style='position:relative;display:none;'>
+    <div id='pmt_show_initialize' style='display:none;'>
+      1. <input type='button' onclick='return initialize();' value='Initialize' />
+      <br>
+    </div>
+    <img id='pmt_show_loading' src='loadingAnimation.gif' style='display:none;' />
+    <br>
+
+    <div id='pmt_show_details' style='display:none;'>
+      2. <input type='button' onclick='return showPaymentDetailsForm();' value='Set Payment Information' />
+    </div>
+
+    <div id='pmt_show_details_form' style='display:none;'>
+      <form method="POST">
+	<table>
+	  <tr>
+	    <td align='right'>Subtotal:</td>
+	    <td><input id='pmt_subtotal' type='text' value='8.25' />
+	    </td>
+	  </tr>
+	  <tr>
+	    <td align='right'>Currency:</td>
+	    <td><input id='pmt_currency' type='text' value='USD' /></td>
+	  </tr>
+	  <tr>
+	    <td align='right'>Recipient:</td>
+	    <td><input id='pmt_recipient' type='text' /></td>
+	  </tr>
+	  <tr>
+	    <td align='right'>Payment:</td>
+	    <td><input id='pmt_type' type='text' value='Goods' /></td>
+	  </tr>
+	  <tr>
+	    <td align='right'>Merchant:</td>
+	    <td><input id='pmt_merchant' type='text'  /></td>
+	  </tr>
+	  <tr>
+	    <td align='right'>Description:</td>
+	    <td><input id='pmt_description' type='text' value='something' /></td>
+	  </tr>
+	  <tr>
+	    <td align='right'>Memo:</td>
+	    <td><input id='pmt_memo' type='text' value='testing sale' /></td>
+	  </tr>
+	  <tr>
+	    <td align='right'>Tax:</td>
+	    <td><input id='pmt_tax' type='text' value='' /></td>
+	  </tr>
+	  <tr>
+	    <td align='right'>Shipping:</td>
+	    <td><input id='pmt_shipping' type='text' value='' /></td>
+	  </tr>
+	  <tr>
+	    <td align='center' colspan='2'>
+	      <input type='button' onclick='return setPaymentDetailsForm();' value='Set' />
+	      <input type='button' onclick='return closePaymentDetailsForm();' value='Cancel' /><br>
+	    </td>
+	  </tr>
+	</table>
+      </form>
+    </div>
+
+    <div id='pmt_show_buttons' style='position:relative;height:50px;'>
+      <table>
+	<tr>
+	  <td>
+	    3.
+	  </td>
+	  <td>
+	    <img src="btn_xpressCheckout.gif" style="margin-right:7px;" onclick='clickButtonMPL(0);' />
+	  </td>
+	</tr>
+      </table>
+    </div>
+    <br>
+
+    <input id='pmt_show_results' type='button' onclick="return showPaymentResultsMPL();" value='Show Payment Results' />
+
+    <div id='pmt_results' style='border:0px solid black;'>
+    </div>
+  </div>
+
+</body>
+</html>
